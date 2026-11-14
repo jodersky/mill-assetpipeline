@@ -1,0 +1,49 @@
+//| mill-version: 1.3.1
+package build
+
+import mill.*, scalalib.*, publish.*
+
+object assetpipeline extends ScalaModule, PublishModule:
+  // a plugin is loaded by the build's own compiler, so it must not be newer
+  // than the Scala version that Mill itself uses
+  def scalaVersion = mill.util.BuildInfo.scalaVersion
+
+  // the plugin is published for one Mill binary version, e.g. mill-assetpipeline_mill1_3
+  def platformSuffix = s"_mill${mill.util.BuildInfo.millBinPlatform}"
+
+  // Mill's own libraries are on the class path of every build already
+  def compileMvnDeps = Seq(
+    mvn"com.lihaoyi::mill-libs:${mill.util.BuildInfo.millVersion}"
+  )
+
+  def artifactName = "mill-assetpipeline"
+  def publishVersion = "0.1.0-SNAPSHOT"
+  def pomSettings = PomSettings(
+    description = "Content-addressed static assets for Mill builds",
+    organization = "io.crashbox",
+    url = "https://github.com/jodersky/mill-assetpipeline",
+    licenses = Seq(License.`BSD-3-Clause`),
+    versionControl = VersionControl.github("jodersky", "mill-assetpipeline"),
+    developers = Seq(
+      Developer("jodersky", "Jakob Odersky", "https://github.com/jodersky")
+    )
+  )
+
+  object test extends ScalaTests, TestModule.Utest:
+    def mvnDeps = Seq(
+      mvn"com.lihaoyi::mill-testkit:${mill.util.BuildInfo.millVersion}"
+    )
+
+    // the example builds in the tests resolve this plugin from a throwaway
+    // Maven repository, which holds the current version of the code, rather
+    // than from ~/.ivy2/local or Maven Central.
+    //
+    // They run with this repository's `mill` launcher script, pinned to the
+    // Mill version that this build uses.
+    def forkEnv = Task:
+      val repo = assetpipeline.publishLocalTestRepo().path
+      super.forkEnv() ++ Map(
+        "COURSIER_REPOSITORIES" -> s"${repo.toNIO.toUri}|central",
+        "MILL_EXECUTABLE_PATH" -> (mill.api.BuildCtx.workspaceRoot / "mill").toString,
+        "MILL_VERSION" -> mill.util.BuildInfo.millVersion
+      )

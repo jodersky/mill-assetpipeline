@@ -1,0 +1,17 @@
+//| mvnDeps:
+//| - io.crashbox::mill-assetpipeline::0.1.0-SNAPSHOT
+package build
+
+import mill.*
+import assetpipeline.*
+
+// an asset made of a single file, rather than a directory
+object scripts extends AssetModule:
+  def assetSource = Task.Source("main.js")
+
+// an asset whose stylesheet loads a font by relative path
+object styles extends AssetModule
+
+object app extends AssetScalaModule:
+  def scalaVersion = "3.9.0"
+  def assetModules = Seq(scripts, styles)
