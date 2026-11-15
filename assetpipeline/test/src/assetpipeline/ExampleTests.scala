@@ -12,11 +12,15 @@ import utest.*
   */
 object ExampleTests extends TestSuite:
 
-  def tester() = IntegrationTester(
-    daemonMode = false,
-    workspaceSourcePath = os.Path(sys.env("MILL_TEST_RESOURCE_DIR")) / "example",
-    millExecutable = os.Path(sys.env("MILL_EXECUTABLE_PATH"))
-  )
+  def tester() =
+    val t = IntegrationTester(
+      daemonMode = false,
+      workspaceSourcePath = os.Path(sys.env("MILL_TEST_RESOURCE_DIR")) / "example",
+      millExecutable = os.Path(sys.env("MILL_EXECUTABLE_PATH"))
+    )
+    // the example depends on whichever version of the plugin this build publishes
+    t.modifyFile(t.workspacePath / "build.mill", _.replace("$PLUGIN_VERSION", sys.env("PLUGIN_VERSION")))
+    t
 
   def manifest(tester: IntegrationTester, module: String): AssetManifest =
     val res = tester.eval(("show", s"$module.assetManifest"))

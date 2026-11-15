@@ -2,6 +2,7 @@
 package build
 
 import mill.*, scalalib.*, publish.*
+import mill.util.VcsVersion
 
 object assetpipeline extends ScalaModule, PublishModule:
   // a plugin is loaded by the build's own compiler, so it must not be newer
@@ -17,7 +18,9 @@ object assetpipeline extends ScalaModule, PublishModule:
   )
 
   def artifactName = "mill-assetpipeline"
-  def publishVersion = "0.1.0-SNAPSHOT"
+  // taken from the latest git tag, e.g. `0.1.0`; untagged commits get a
+  // suffix with the commit distance and hash
+  def publishVersion = VcsVersion.vcsState().format()
   def pomSettings = PomSettings(
     description = "Content-addressed static assets for Mill builds",
     organization = "io.crashbox",
@@ -45,5 +48,6 @@ object assetpipeline extends ScalaModule, PublishModule:
       super.forkEnv() ++ Map(
         "COURSIER_REPOSITORIES" -> s"${repo.toNIO.toUri}|central",
         "MILL_EXECUTABLE_PATH" -> (mill.api.BuildCtx.workspaceRoot / "mill").toString,
-        "MILL_VERSION" -> mill.util.BuildInfo.millVersion
+        "MILL_VERSION" -> mill.util.BuildInfo.millVersion,
+        "PLUGIN_VERSION" -> assetpipeline.publishVersion()
       )

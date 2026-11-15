@@ -1,5 +1,5 @@
 //| mvnDeps:
-//| - io.crashbox::mill-assetpipeline::0.1.0-SNAPSHOT
+//| - io.crashbox::mill-assetpipeline::$PLUGIN_VERSION
 package build
 
 import mill.*
