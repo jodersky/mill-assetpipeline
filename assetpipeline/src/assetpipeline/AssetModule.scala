@@ -53,6 +53,8 @@ trait AssetModule extends Module:
     * directories. Each file's path and contents both go into the hash, so
     * renaming a file changes the hash as well. Compressed versions from
     * [[assetCompress]] are recorded per file, but are not part of the hash.
+    *
+    * The hash is the first 16 hex digits (64 bits) of a SHA-256 digest.
     */
   def assetManifest: T[AssetManifest] = Task:
     val root = assetSource().path
@@ -88,11 +90,12 @@ trait AssetModule extends Module:
           n = in.read(buffer)
       finally in.close()
 
-    val hash = digest.digest().map(b => f"${b & 0xff}%02x").mkString
+    // 64 bits is plenty to tell versions of one asset apart, and keeps URLs short
+    val hash = digest.digest().take(8).map(b => f"${b & 0xff}%02x").mkString
 
     AssetManifest(
       name = assetName(),
-      sha256 = hash,
+      hash = hash,
       files = sorted.map: (rel, _) =>
         val encodings =
           if os.exists(compressed / AssetModule.encoded(rel, "br")) then Seq("br")

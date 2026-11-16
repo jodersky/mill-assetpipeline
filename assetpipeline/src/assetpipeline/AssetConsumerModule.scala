@@ -35,7 +35,7 @@ trait AssetConsumerModule extends Module:
 
     val base = Task.dest / os.SubPath(assetPath())
     for ((manifest, source), compressed) <- manifests.zip(sources).zip(compressed) do
-      val target = base / manifest.name / manifest.sha256
+      val target = base / manifest.name / manifest.hash
       for (rel, file) <- AssetModule.listFiles(source.path) do
         os.copy(file, target / rel, createFolders = true)
       os.copy(compressed.path, target, mergeFolders = true)

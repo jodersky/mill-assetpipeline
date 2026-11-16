@@ -33,7 +33,7 @@ trait AssetScalaModule extends AssetConsumerModule with mill.scalalib.ScalaModul
     for manifest <- allAssetManifests() do
       out ++= s"\nobject ${AssetScalaModule.ident(manifest.name)}:\n"
       for file <- manifest.files do
-        val path = "/" + (base / manifest.name / manifest.sha256 / file.path).toString
+        val path = "/" + (base / manifest.name / manifest.hash / file.path).toString
         if file.path.toString.exists(c => c == '`' || c.isControl) then
           Task.fail(s"Asset file name cannot be used as a Scala identifier: ${file.path}")
         out ++= s"  final val `${file.path}` = ${AssetScalaModule.literal(path)}\n"

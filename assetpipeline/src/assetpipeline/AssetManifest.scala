@@ -2,6 +2,6 @@ package assetpipeline
 
 case class AssetManifest(
   name: String,
-  sha256: String,
+  hash: String,
   files: Seq[AssetFile]
 ) derives upickle.ReadWriter

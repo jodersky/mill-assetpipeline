@@ -34,7 +34,7 @@ object ExampleTests extends TestSuite:
 
       val scripts = manifest(t, "scripts")
       assert(scripts.name == "scripts")
-      assert(scripts.sha256.matches("[0-9a-f]{64}"))
+      assert(scripts.hash.matches("[0-9a-f]{16}"))
       assert(scripts.files == Seq(AssetFile(os.sub / "main.js", Seq("br"))))
 
       // the font is not compressed, because of its extension
@@ -49,8 +49,8 @@ object ExampleTests extends TestSuite:
 
     test("app finds the assets, and relative references between them, on its class path"):
       val t = tester()
-      val scripts = manifest(t, "scripts").sha256
-      val styles = manifest(t, "styles").sha256
+      val scripts = manifest(t, "scripts").hash
+      val styles = manifest(t, "styles").hash
       val res = t.eval("app.run")
       assert(res.isSuccess)
       val lines = res.out.linesIterator.toSeq
@@ -61,13 +61,13 @@ object ExampleTests extends TestSuite:
 
     test("changing a file changes only its own asset's hash"):
       val t = tester()
-      val scriptsBefore = manifest(t, "scripts").sha256
-      val stylesBefore = manifest(t, "styles").sha256
+      val scriptsBefore = manifest(t, "scripts").hash
+      val stylesBefore = manifest(t, "styles").hash
 
       t.modifyFile(t.workspacePath / "styles" / "src" / "css" / "main.css", _ + "\nh1 { margin-top: 2rem; }\n")
 
-      val scriptsAfter = manifest(t, "scripts").sha256
-      val stylesAfter = manifest(t, "styles").sha256
+      val scriptsAfter = manifest(t, "scripts").hash
+      val stylesAfter = manifest(t, "styles").hash
       assert(scriptsAfter == scriptsBefore)
       assert(stylesAfter != stylesBefore)
 
